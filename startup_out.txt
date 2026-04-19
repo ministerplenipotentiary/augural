@@ -1,0 +1,32 @@
+==============================================================
+  CRYPTO NEWS + WHALE MONITOR
+  Watching : HYPE, BTC, ETH, SOL
+  Sources  : CoinDesk · CoinTelegraph · Decrypt · The Block · Blockworks
+  Whales   : BTC (Blockchain.com) | ETH (Etherscan) | SOL (Solscan) | HYPE (Hyperliquid)
+  Interval : every 5 min  |  macro every 4h  |  brief at 08:00
+  Telegram : enabled — send "status" for live update
+==============================================================
+
+  Startup message sent to Telegram.
+
+Checking macro calendar...
+  0 high-impact USD event(s) in next 24h
+
+Loaded 130 seen articles.
+
+Monitoring...
+
+  [warn] ETH Etherscan fetch failed: invalid literal for int() with base 16: 'You are using a deprecated V1 endpoint, switch to Etherscan API V2 using https://docs.etherscan.io/v2-migration'
+  [warn] SOL Solscan fetch failed: 404 Client Error: Not Found for url: https://public-api.solscan.io/transaction/last?limit=50
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  21:23:31  🐋 WHALE ALERT  [BTC]
+  $3,557,514 moved: bc1qw6…3249 -> bc1qca…3jwd
+  BTC $75,021 (+0.4% 1h)
+
+  SIGNAL: BULLISH
+  Suggests: Whale accumulation - moving BTC off exchange to cold storage
+  
+  1-4H IMPACT: Potential short-term bullish pressure as large holder removes sell liquidity from exchanges, though price impact depends on overall market conditions and concurrent whale activity.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[21:23:23] No new articles. Next check in 5m...

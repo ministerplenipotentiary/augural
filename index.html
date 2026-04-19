@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Augural — Crypto Trading Alerts</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0a0a0f;
+      --surface:   #111118;
+      --border:    #1e1e2e;
+      --accent:    #7c6aff;
+      --accent-dim:#4e3fcf;
+      --text:      #e8e8f0;
+      --muted:     #6b6b82;
+      --success:   #22c55e;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── noise overlay ── */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── glow blob ── */
+    .glow {
+      position: fixed;
+      top: -200px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 800px;
+      height: 500px;
+      background: radial-gradient(ellipse, rgba(124,106,255,0.12) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── layout ── */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 24px 60px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── nav ── */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 10;
+      padding: 20px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid transparent;
+      backdrop-filter: blur(12px);
+      background: rgba(10,10,15,0.7);
+    }
+
+    .logo {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .logo span { color: var(--accent); }
+
+    .nav-badge {
+      font-size: 12px;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 4px 12px;
+      border-radius: 999px;
+    }
+
+    /* ── hero ── */
+    .hero {
+      max-width: 680px;
+      text-align: center;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--accent);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+    }
+
+    .eyebrow::before,
+    .eyebrow::after {
+      content: "";
+      display: block;
+      width: 24px;
+      height: 1px;
+      background: var(--accent);
+      opacity: 0.5;
+    }
+
+    h1 {
+      font-size: clamp(36px, 6vw, 60px);
+      font-weight: 800;
+      letter-spacing: -1.5px;
+      line-height: 1.1;
+      margin-bottom: 24px;
+      color: var(--text);
+    }
+
+    h1 em {
+      font-style: normal;
+      background: linear-gradient(135deg, #a78bfa, #7c6aff, #5b8dee);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      font-size: 18px;
+      color: var(--muted);
+      max-width: 500px;
+      margin: 0 auto 52px;
+      line-height: 1.7;
+    }
+
+    /* ── features ── */
+    .features {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 52px;
+      text-align: left;
+      width: 100%;
+      max-width: 480px;
+    }
+
+    .feature {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 18px 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+
+    .feature-icon {
+      flex-shrink: 0;
+      width: 32px;
+      height: 32px;
+      background: rgba(124,106,255,0.1);
+      border: 1px solid rgba(124,106,255,0.2);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+    }
+
+    .feature-text strong {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 3px;
+    }
+
+    .feature-text span {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* ── form ── */
+    .form-wrap {
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    input[type="email"] {
+      flex: 1;
+      padding: 13px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+      min-width: 0;
+    }
+
+    input[type="email"]::placeholder { color: var(--muted); }
+
+    input[type="email"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(124,106,255,0.12);
+    }
+
+    button[type="submit"] {
+      padding: 13px 22px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    button[type="submit"]:hover  { background: #9381ff; }
+    button[type="submit"]:active { transform: scale(0.98); }
+
+    .form-note {
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 12px;
+    }
+
+    .success-msg {
+      display: none;
+      text-align: center;
+      font-size: 14px;
+      color: var(--success);
+      padding: 14px;
+      background: rgba(34,197,94,0.07);
+      border: 1px solid rgba(34,197,94,0.2);
+      border-radius: 10px;
+      margin-top: 8px;
+    }
+
+    /* ── footer ── */
+    footer {
+      position: relative;
+      z-index: 1;
+      border-top: 1px solid var(--border);
+      padding: 24px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    footer .logo { font-size: 15px; }
+
+    .footer-links {
+      display: flex;
+      gap: 24px;
+    }
+
+    .footer-links a {
+      font-size: 13px;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover { color: var(--text); }
+
+    .footer-copy {
+      font-size: 12px;
+      color: var(--muted);
+      width: 100%;
+      text-align: center;
+      margin-top: 4px;
+    }
+
+    @media (max-width: 540px) {
+      nav { padding: 16px 20px; }
+      footer { padding: 20px; flex-direction: column; align-items: center; text-align: center; }
+      .form-row { flex-direction: column; }
+      button[type="submit"] { width: 100%; }
+      .footer-links { justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="glow"></div>
+
+  <nav>
+    <a href="#" class="logo">Augur<span>al</span></a>
+    <span class="nav-badge">Early Access</span>
+  </nav>
+
+  <main>
+    <div class="hero">
+
+      <div class="eyebrow">AI-Powered Signal Intelligence</div>
+
+      <h1>Know before<br/>the market <em>moves</em></h1>
+
+      <p class="subtitle">
+        Augural monitors crypto news in real time, filters the noise,
+        and delivers AI-analysed alerts directly to your phone —
+        before the price moves.
+      </p>
+
+      <div class="features">
+        <div class="feature">
+          <div class="feature-icon">⚡</div>
+          <div class="feature-text">
+            <strong>Real-time news screening</strong>
+            <span>5 premium sources scanned every 5 minutes. Only HIGH significance events reach you — macro catalysts, on-chain signals, protocol exploits.</span>
+          </div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">🧠</div>
+          <div class="feature-text">
+            <strong>Instant AI analysis</strong>
+            <span>Every alert includes signal direction, 1–4 hour price impact, leverage risk, and a specific level to watch — generated by Claude in seconds.</span>
+          </div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">📲</div>
+          <div class="feature-text">
+            <strong>Telegram delivery + morning brief</strong>
+            <span>Alerts hit your Telegram the moment they fire. Plus a daily 08:00 briefing with live prices, macro events, and market context.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-wrap">
+        <label class="form-label" for="email">Join the waitlist — free early access</label>
+        <form
+          id="waitlist-form"
+          action="https://formspree.io/f/YOUR_FORM_ID"
+          method="POST"
+        >
+          <div class="form-row">
+            <input
+              type="email"
+              id="email"
+              name="email"
+              placeholder="your@email.com"
+              required
+              autocomplete="email"
+            />
+            <button type="submit">Get Access</button>
+          </div>
+          <p class="form-note">No spam. Unsubscribe any time.</p>
+        </form>
+        <div class="success-msg" id="success-msg">
+          ✓ You're on the list. We'll be in touch soon.
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer>
+    <a href="#" class="logo">Augur<span>al</span></a>
+    <div class="footer-links">
+      <a href="mailto:hello@augural.io">Contact</a>
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+    </div>
+    <p class="footer-copy">© 2026 Augural. All rights reserved.</p>
+  </footer>
+
+  <script>
+    const form = document.getElementById("waitlist-form");
+    const successMsg = document.getElementById("success-msg");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const btn = form.querySelector("button[type='submit']");
+      btn.textContent = "Joining…";
+      btn.disabled = true;
+
+      try {
+        const resp = await fetch(form.action, {
+          method: "POST",
+          body: new FormData(form),
+          headers: { Accept: "application/json" },
+        });
+
+        if (resp.ok) {
+          form.style.display = "none";
+          successMsg.style.display = "block";
+        } else {
+          btn.textContent = "Try again";
+          btn.disabled = false;
+        }
+      } catch {
+        btn.textContent = "Try again";
+        btn.disabled = false;
+      }
+    });
+  </script>
+
+</body>
+</html>
